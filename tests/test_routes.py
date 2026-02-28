@@ -51,7 +51,11 @@ def test_get_run_with_steps(client):
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == run_id
-    assert data["steps"] == []
+    assert data["status"] == "complete"
+    assert len(data["steps"]) > 0
+    step_types = [s["step_type"] for s in data["steps"]]
+    assert "planner" in step_types
+    assert "synthesis" in step_types
 
 
 def test_get_run_not_found(client):

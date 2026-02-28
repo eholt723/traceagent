@@ -20,6 +20,9 @@ class StepBase(BaseModel):
 
 class StepCreate(StepBase):
     run_id: int
+    output_data: dict[str, Any] | None = None
+    duration_ms: int | None = None
+    triggered_loop: bool = False
 
 
 class Step(StepBase):
