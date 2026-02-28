@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class UserBase(BaseModel):
+    uuid: str
     name: str
 
 
