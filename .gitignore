@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.*
+
+# Claude
+CLAUDE.md
+.claude/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+*.db
+
+# Node
+node_modules/
+ui/dist/
+ui/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
