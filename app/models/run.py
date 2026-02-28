@@ -26,3 +26,7 @@ class Run(Base):
     user: Mapped["User"] = relationship("User", back_populates="runs")
     steps: Mapped[list["Step"]] = relationship("Step", back_populates="run", order_by="Step.step_order")
     forked_from: Mapped["Run | None"] = relationship("Run", remote_side="Run.id")
+
+    @property
+    def user_name(self) -> str | None:
+        return self.user.name if self.user else None

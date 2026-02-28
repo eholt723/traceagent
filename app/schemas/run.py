@@ -26,6 +26,7 @@ class RunCreate(RunBase):
 class Run(RunBase):
     id: int
     user_id: int | None
+    user_name: str | None
     status: RunStatus
     started_at: datetime
     ended_at: datetime | None

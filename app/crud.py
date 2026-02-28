@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.run import Run
 from app.models.step import Step
@@ -42,12 +42,18 @@ def create_run(db: Session, run_in: RunCreate) -> Run:
 
 
 def get_run(db: Session, run_id: int) -> Run | None:
-    return db.query(Run).filter(Run.id == run_id).first()
+    return (
+        db.query(Run)
+        .options(joinedload(Run.user))
+        .filter(Run.id == run_id)
+        .first()
+    )
 
 
 def list_runs(db: Session, limit: int = 20, offset: int = 0) -> list[Run]:
     return (
         db.query(Run)
+        .options(joinedload(Run.user))
         .filter(Run.is_public == True)
         .order_by(Run.started_at.desc())
         .offset(offset)

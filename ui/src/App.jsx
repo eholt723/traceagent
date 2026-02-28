@@ -1,5 +1,7 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { UserProvider, useUser } from './UserContext'
 import NameModal from './components/NameModal'
+import ActivityWall from './pages/ActivityWall'
 
 function AppShell() {
   const { user, ready } = useUser()
@@ -7,14 +9,16 @@ function AppShell() {
   if (!ready) return null
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <>
       {!user && <NameModal />}
       {user && (
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <p className="text-gray-500 text-sm">Logged in as {user.name}</p>
-        </div>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<ActivityWall />} />
+          </Routes>
+        </BrowserRouter>
       )}
-    </div>
+    </>
   )
 }
 
