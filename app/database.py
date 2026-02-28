@@ -3,9 +3,9 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from app.config import settings
 
-engine = create_engine(settings.database_url) if settings.database_url else None
+engine = create_engine(settings.database_url)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine) if engine else None
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
@@ -13,8 +13,6 @@ class Base(DeclarativeBase):
 
 
 def get_db():
-    if SessionLocal is None:
-        raise RuntimeError("DATABASE_URL is not configured")
     db = SessionLocal()
     try:
         yield db
