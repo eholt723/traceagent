@@ -1,6 +1,9 @@
 import asyncio
+import logging
 from collections.abc import Callable
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 from app.agent import planner, searcher, reflector, synthesizer
 from app.config import settings
@@ -107,6 +110,7 @@ async def run_pipeline(run_id: int, query: str, emit: Callable) -> None:
         await emit(run_id, "run_complete", {"run_id": run_id})
 
     except Exception as exc:
+        logger.exception("run %s failed: %s", run_id, exc)
         update_run_status(db, run_id, "failed", ended_at=datetime.now(timezone.utc))
         await emit(run_id, "run_error", {"run_id": run_id, "error": str(exc)})
     finally:
