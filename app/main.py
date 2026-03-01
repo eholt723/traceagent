@@ -1,7 +1,9 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 import app.models  # register all ORM models with Base before create_all
 from app.database import engine, Base
@@ -38,3 +40,9 @@ app.include_router(ws_router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+# Serve built React app in production (ui/dist must exist)
+_dist = os.path.join(os.path.dirname(__file__), "..", "ui", "dist")
+if os.path.isdir(_dist):
+    app.mount("/", StaticFiles(directory=_dist, html=True), name="static")
