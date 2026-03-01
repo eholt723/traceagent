@@ -1,5 +1,6 @@
 ---
 title: TraceAgent
+emoji: 🕵️
 sdk: docker
 app_port: 7860
 pinned: false
