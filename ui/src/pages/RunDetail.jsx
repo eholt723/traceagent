@@ -1,10 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
+import { useUser } from '../UserContext'
 import Header from '../components/Header'
 import StepBlock from '../components/StepBlock'
 
-const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:8000'
+// Derive WS base URL from env or window.location at runtime
+const WS_BASE = (() => {
+  const explicit = import.meta.env.VITE_WS_URL
+  if (explicit) return explicit
+  const apiEnv = import.meta.env.VITE_API_URL
+  // env var set to non-empty string (e.g. local dev with VITE_API_URL set)
+  if (apiEnv) return apiEnv.replace(/^http/, 'ws')
+  // env var not defined at all → local dev default
+  if (apiEnv === undefined) return 'ws://localhost:8000'
+  // env var set to '' → same-origin production
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${proto}//${window.location.host}`
+})()
 
 const STATUS_PILL = {
   complete: 'bg-green-100 text-green-700',
@@ -22,11 +35,22 @@ function formatDuration(started, ended) {
 export default function RunDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useUser()
   const [run, setRun] = useState(null)
   const [steps, setSteps] = useState([])
   const [status, setStatus] = useState('pending')
   const [error, setError] = useState(null)
   const wsRef = useRef(null)
+
+  // fork state
+  const [forkOpen, setForkOpen] = useState(false)
+  const [forkQuery, setForkQuery] = useState('')
+  const [forking, setForking] = useState(false)
+
+  // compare picker state
+  const [compareOpen, setCompareOpen] = useState(false)
+  const [compareRuns, setCompareRuns] = useState([])
+  const [compareFetching, setCompareFetching] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -70,7 +94,6 @@ export default function RunDetail() {
       }
       if (msg.event === 'run_complete') {
         setStatus('complete')
-        // re-fetch to get accurate step_count and ended_at
         api.getRun(id).then(data => setRun(data)).catch(() => {})
       }
       if (msg.event === 'run_error') {
@@ -79,7 +102,6 @@ export default function RunDetail() {
     }
 
     ws.onerror = () => {
-      // pipeline may have finished before we connected — poll once
       setTimeout(() => {
         api.getRun(id).then(data => {
           setRun(data)
@@ -87,6 +109,32 @@ export default function RunDetail() {
           setSteps(data.steps || [])
         }).catch(() => {})
       }, 2000)
+    }
+  }
+
+  async function handleFork(e) {
+    e.preventDefault()
+    const q = forkQuery.trim()
+    if (!q) return
+    setForking(true)
+    try {
+      const newRun = await api.forkRun(id, q, user?.id ?? null)
+      navigate(`/runs/${newRun.id}`)
+    } catch {
+      setForking(false)
+    }
+  }
+
+  async function openCompare() {
+    const next = !compareOpen
+    setCompareOpen(next)
+    if (next && compareRuns.length === 0) {
+      setCompareFetching(true)
+      try {
+        const data = await api.listRuns(20)
+        setCompareRuns(data.filter(r => r.id !== Number(id) && r.status === 'complete'))
+      } catch {}
+      setCompareFetching(false)
     }
   }
 
@@ -119,11 +167,11 @@ export default function RunDetail() {
           onClick={() => navigate('/')}
           className="text-sm text-gray-400 hover:text-gray-600 mb-6 block transition-colors"
         >
-          ← Back
+          &larr; Back
         </button>
 
         {/* Run header */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-4">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-2">
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-lg font-semibold text-gray-900 leading-snug">
               "{run.query}"
@@ -137,11 +185,102 @@ export default function RunDetail() {
             <span>Started {new Date(run.started_at).toLocaleString()}</span>
             {duration && <span>Duration {duration}</span>}
             {steps.length > 0 && <span>{steps.length} steps</span>}
+            {run.forked_from_id && (
+              <button
+                onClick={() => navigate(`/runs/${run.forked_from_id}`)}
+                className="text-indigo-400 hover:text-indigo-600 transition-colors"
+              >
+                Forked from #{run.forked_from_id}
+              </button>
+            )}
           </div>
+          {status === 'complete' && (
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => {
+                  setForkOpen(v => !v)
+                  setForkQuery(run.query)
+                  setCompareOpen(false)
+                }}
+                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Fork
+              </button>
+              <button
+                onClick={() => { openCompare(); setForkOpen(false) }}
+                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Compare
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Fork panel */}
+        {forkOpen && (
+          <div className="bg-white rounded-xl border border-indigo-200 shadow-sm p-4 mb-2">
+            <p className="text-xs font-medium text-gray-500 mb-2">Fork this run — edit the query if you like</p>
+            <form onSubmit={handleFork} className="flex gap-2">
+              <input
+                type="text"
+                value={forkQuery}
+                onChange={e => setForkQuery(e.target.value)}
+                autoFocus
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                type="submit"
+                disabled={!forkQuery.trim() || forking}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                {forking ? 'Forking...' : 'Fork'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setForkOpen(false)}
+                className="text-gray-400 hover:text-gray-600 px-2 transition-colors"
+              >
+                &times;
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Compare picker */}
+        {compareOpen && (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-2">
+            <p className="text-xs font-medium text-gray-500 mb-2">Compare with another completed run</p>
+            {compareFetching ? (
+              <p className="text-sm text-gray-400">Loading runs...</p>
+            ) : compareRuns.length === 0 ? (
+              <p className="text-sm text-gray-400">No other completed runs to compare.</p>
+            ) : (
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {compareRuns.map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => navigate(`/compare/${id}/${r.id}`)}
+                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-sm transition-colors"
+                  >
+                    <span className="font-medium text-gray-800 block truncate">"{r.query}"</span>
+                    <span className="text-xs text-gray-400">
+                      #{r.id}{r.user_name ? ` · by ${r.user_name}` : ''}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              onClick={() => setCompareOpen(false)}
+              className="mt-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
         {/* Steps */}
-        <div className="space-y-2">
+        <div className="space-y-2 mt-2">
           {steps.length === 0 && status !== 'complete' && status !== 'failed' && (
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-8 text-center text-sm text-gray-400">
               Agent is starting...
