@@ -139,7 +139,7 @@ export default function RunDetail() {
   }
 
   if (error) return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header onNewResearch={() => navigate('/')} />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <p className="text-sm text-red-500">{error}</p>
@@ -148,7 +148,7 @@ export default function RunDetail() {
   )
 
   if (!run) return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header onNewResearch={() => navigate('/')} />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <p className="text-sm text-gray-400">Loading...</p>
@@ -160,27 +160,27 @@ export default function RunDetail() {
   const duration = formatDuration(run.started_at, run.ended_at)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header onNewResearch={() => navigate('/')} />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <button
           onClick={() => navigate('/')}
-          className="text-sm text-gray-400 hover:text-gray-600 mb-6 block transition-colors"
+          className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 mb-6 block transition-colors"
         >
           &larr; Back
         </button>
 
         {/* Run header */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 mb-2">
           <div className="flex items-start justify-between gap-4">
-            <h1 className="text-lg font-semibold text-gray-900 leading-snug">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 leading-snug">
               "{run.query}"
             </h1>
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${pill}`}>
               {status}
             </span>
           </div>
-          <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-400">
+          <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-400 dark:text-gray-500">
             {run.user_name && <span>by {run.user_name}</span>}
             <span>Started {new Date(run.started_at).toLocaleString()}</span>
             {duration && <span>Duration {duration}</span>}
@@ -202,13 +202,13 @@ export default function RunDetail() {
                   setForkQuery(run.query)
                   setCompareOpen(false)
                 }}
-                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Fork
               </button>
               <button
                 onClick={() => { openCompare(); setForkOpen(false) }}
-                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Compare
               </button>
@@ -218,15 +218,15 @@ export default function RunDetail() {
 
         {/* Fork panel */}
         {forkOpen && (
-          <div className="bg-white rounded-xl border border-indigo-200 shadow-sm p-4 mb-2">
-            <p className="text-xs font-medium text-gray-500 mb-2">Fork this run — edit the query if you like</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm p-4 mb-2">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Fork this run — edit the query if you like</p>
             <form onSubmit={handleFork} className="flex gap-2">
               <input
                 type="text"
                 value={forkQuery}
                 onChange={e => setForkQuery(e.target.value)}
                 autoFocus
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <button
                 type="submit"
@@ -238,7 +238,7 @@ export default function RunDetail() {
               <button
                 type="button"
                 onClick={() => setForkOpen(false)}
-                className="text-gray-400 hover:text-gray-600 px-2 transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 px-2 transition-colors"
               >
                 &times;
               </button>
@@ -248,22 +248,22 @@ export default function RunDetail() {
 
         {/* Compare picker */}
         {compareOpen && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-2">
-            <p className="text-xs font-medium text-gray-500 mb-2">Compare with another completed run</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 mb-2">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Compare with another completed run</p>
             {compareFetching ? (
-              <p className="text-sm text-gray-400">Loading runs...</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Loading runs...</p>
             ) : compareRuns.length === 0 ? (
-              <p className="text-sm text-gray-400">No other completed runs to compare.</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">No other completed runs to compare.</p>
             ) : (
               <div className="space-y-1 max-h-48 overflow-y-auto">
                 {compareRuns.map(r => (
                   <button
                     key={r.id}
                     onClick={() => navigate(`/compare/${id}/${r.id}`)}
-                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-sm transition-colors"
+                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors"
                   >
-                    <span className="font-medium text-gray-800 block truncate">"{r.query}"</span>
-                    <span className="text-xs text-gray-400">
+                    <span className="font-medium text-gray-800 dark:text-gray-200 block truncate">"{r.query}"</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
                       #{r.id}{r.user_name ? ` · by ${r.user_name}` : ''}
                     </span>
                   </button>
@@ -272,7 +272,7 @@ export default function RunDetail() {
             )}
             <button
               onClick={() => setCompareOpen(false)}
-              className="mt-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              className="mt-2 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               Cancel
             </button>
@@ -282,7 +282,7 @@ export default function RunDetail() {
         {/* Steps */}
         <div className="space-y-2 mt-2">
           {steps.length === 0 && status !== 'complete' && status !== 'failed' && (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-8 text-center text-sm text-gray-400">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm px-5 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
               Agent is starting...
             </div>
           )}
@@ -294,7 +294,7 @@ export default function RunDetail() {
             />
           ))}
           {(status === 'pending' || status === 'running') && steps.length > 0 && (
-            <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-400">
+            <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-400 dark:text-gray-500">
               <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
               Running...
             </div>

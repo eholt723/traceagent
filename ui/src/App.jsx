@@ -22,6 +22,9 @@ function AppShell() {
           </Routes>
         </BrowserRouter>
       )}
+      <div className="fixed bottom-3 right-4 text-xs text-gray-400 dark:text-gray-600 pointer-events-none select-none">
+        Created by Eric Holt
+      </div>
     </>
   )
 }

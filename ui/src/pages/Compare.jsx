@@ -25,15 +25,15 @@ function RunColumn({ run, navigate }) {
   return (
     <div className="flex-1 min-w-0 space-y-3">
       {/* Run card */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
         <button
           onClick={() => navigate(`/runs/${run.id}`)}
           className="text-xs text-indigo-500 hover:text-indigo-700 mb-2 block transition-colors"
         >
           Run #{run.id} &rarr;
         </button>
-        <p className="text-sm font-semibold text-gray-900 leading-snug mb-2">"{run.query}"</p>
-        <div className="flex flex-wrap gap-2 items-center text-xs text-gray-400">
+        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-snug mb-2">"{run.query}"</p>
+        <div className="flex flex-wrap gap-2 items-center text-xs text-gray-400 dark:text-gray-500">
           <span className={`font-medium px-2 py-0.5 rounded-full ${pill}`}>{run.status}</span>
           {run.user_name && <span>by {run.user_name}</span>}
           <span>{(run.steps || []).length} steps</span>
@@ -76,24 +76,24 @@ export default function Compare() {
   }, [id1, id2])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header onNewResearch={() => navigate('/')} />
       <main className="max-w-7xl mx-auto px-4 py-8">
         <button
           onClick={() => navigate(-1)}
-          className="text-sm text-gray-400 hover:text-gray-600 mb-6 block transition-colors"
+          className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 mb-6 block transition-colors"
         >
           &larr; Back
         </button>
 
-        <h1 className="text-lg font-semibold text-gray-900 mb-6">Compare Runs</h1>
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Compare Runs</h1>
 
         {loading ? (
-          <p className="text-sm text-gray-400">Loading...</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">Loading...</p>
         ) : (
           <div className="flex flex-col sm:flex-row gap-4 items-start">
             <RunColumn run={run1} navigate={navigate} />
-            <div className="hidden sm:block w-px bg-gray-200 self-stretch" />
+            <div className="hidden sm:block w-px bg-gray-200 dark:bg-gray-700 self-stretch" />
             <RunColumn run={run2} navigate={navigate} />
           </div>
         )}
