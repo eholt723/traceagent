@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
+from groq import RateLimitError
+
 from app.agent import planner, searcher, reflector, synthesizer
 from app.config import settings
 from app.crud import create_step, update_run_status
@@ -109,6 +111,16 @@ async def run_pipeline(run_id: int, query: str, emit: Callable) -> None:
                           step_count=step_order)
         await emit(run_id, "run_complete", {"run_id": run_id})
 
+    except RateLimitError:
+        logger.warning("run %s hit Groq rate limit", run_id)
+        msg = (
+            "Groq free-tier daily token limit reached. "
+            "This app runs on llama-3.3-70b-versatile via Groq's free API — "
+            "swapping to a paid tier or a different model removes this restriction. "
+            "The limit resets every 24 hours."
+        )
+        update_run_status(db, run_id, "failed", ended_at=datetime.now(timezone.utc))
+        await emit(run_id, "run_error", {"run_id": run_id, "error": msg})
     except Exception as exc:
         logger.exception("run %s failed: %s", run_id, exc)
         update_run_status(db, run_id, "failed", ended_at=datetime.now(timezone.utc))

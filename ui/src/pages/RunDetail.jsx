@@ -40,6 +40,7 @@ export default function RunDetail() {
   const [steps, setSteps] = useState([])
   const [status, setStatus] = useState('pending')
   const [error, setError] = useState(null)
+  const [runError, setRunError] = useState(null)
   const wsRef = useRef(null)
 
   // fork state
@@ -98,6 +99,7 @@ export default function RunDetail() {
       }
       if (msg.event === 'run_error') {
         setStatus('failed')
+        if (msg.data?.error) setRunError(msg.data.error)
       }
     }
 
@@ -276,6 +278,13 @@ export default function RunDetail() {
             >
               Cancel
             </button>
+          </div>
+        )}
+
+        {/* Error banner */}
+        {runError && (
+          <div className="mt-2 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-300">
+            {runError}
           </div>
         )}
 
