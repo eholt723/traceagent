@@ -222,6 +222,6 @@ The next version will add a live observability dashboard, surfacing aggregate st
 - **Average execution time** — full pipeline and per-stage breakdown
 - **Per-stage timing** — how long planner, search, reflection, and synthesis each take on average
 
-The goal is to make the observability angle explicit and visual: a recruiter or engineer should be able to open the dashboard and immediately see the agent's behavior patterns across all runs, not just read about them in a README.
+The goal is to make the observability explicit and visual: the user will be able to open the dashboard and immediately see the agent's behavior patterns across all runs.
 
 No database schema changes are required — all metrics are derived from the existing `runs` and `steps` tables.
