@@ -209,3 +209,19 @@ The `Dockerfile` uses a two-stage build: the first stage builds the React app wi
    - `TAVILY_API_KEY` (secret)
    - `DATABASE_URL` (secret) — your Neon connection string
 4. Click **Factory rebuild** to deploy
+
+---
+
+## Roadmap — v2
+
+The next version will add a live observability dashboard, surfacing aggregate stats computed directly from the existing run and step data:
+
+- **Total runs** and average steps per run
+- **Reflection loop rate** — how often the agent decides search results are insufficient and loops back
+- **Success rate** — completed runs vs. failed
+- **Average execution time** — full pipeline and per-stage breakdown
+- **Per-stage timing** — how long planner, search, reflection, and synthesis each take on average
+
+The goal is to make the observability angle explicit and visual: a recruiter or engineer should be able to open the dashboard and immediately see the agent's behavior patterns across all runs, not just read about them in a README.
+
+No database schema changes are required — all metrics are derived from the existing `runs` and `steps` tables.
