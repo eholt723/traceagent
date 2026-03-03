@@ -12,6 +12,7 @@ import app.models  # register all ORM models with Base before create_all
 from app.config import settings
 from app.database import engine, Base
 from app.api.runs import router as runs_router
+from app.api.stats import router as stats_router
 from app.api.users import router as users_router
 from app.api.ws import router as ws_router
 
@@ -62,6 +63,7 @@ app.add_middleware(
 )
 
 app.include_router(runs_router)
+app.include_router(stats_router)
 app.include_router(users_router)
 app.include_router(ws_router)
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useUser } from '../UserContext'
 
 export default function Header({ onNewResearch }) {
@@ -22,6 +22,12 @@ export default function Header({ onNewResearch }) {
           TraceAgent
         </button>
         <div className="flex items-center gap-3">
+          <Link
+            to="/dashboard"
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors hidden sm:block"
+          >
+            Dashboard
+          </Link>
           {user && (
             <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">{user.name}</span>
           )}

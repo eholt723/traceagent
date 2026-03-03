@@ -2,8 +2,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { UserProvider, useUser } from './UserContext'
 import NameModal from './components/NameModal'
 import ActivityWall from './pages/ActivityWall'
-import RunDetail from './pages/RunDetail'
 import Compare from './pages/Compare'
+import Dashboard from './pages/Dashboard'
+import RunDetail from './pages/RunDetail'
 
 function AppShell() {
   const { user, ready } = useUser()
@@ -17,6 +18,7 @@ function AppShell() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<ActivityWall />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/runs/:id" element={<RunDetail />} />
             <Route path="/compare/:id1/:id2" element={<Compare />} />
           </Routes>

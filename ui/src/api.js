@@ -27,4 +27,6 @@ export const api = {
 
   forkRun: (runId, query, userId = null) =>
     request(`/runs/${runId}/fork`, { method: 'POST', body: JSON.stringify({ query, user_id: userId, is_public: true }) }),
+
+  getStats: () => request('/stats'),
 }
