@@ -125,7 +125,7 @@ async def run_pipeline(run_id: int, query: str, emit: Callable) -> None:
             "The limit resets every 24 hours."
         )
         update_run_status(db, run_id, "failed", ended_at=datetime.now(timezone.utc))
-        emit_run_failed()
+        emit_run_failed(rate_limit=True)
         await emit(run_id, "run_error", {"run_id": run_id, "error": msg})
     except Exception as exc:
         logger.exception("run %s failed: %s", run_id, exc)

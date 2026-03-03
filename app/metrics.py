@@ -45,11 +45,16 @@ def _put(metric_data: list[dict]) -> None:
 def emit_run_complete(duration_ms: int, loop_count: int) -> None:
     _put([
         {"MetricName": "RunsCompleted", "Value": 1, "Unit": "Count"},
+        {"MetricName": "RunsFailed", "Value": 0, "Unit": "Count"},
         {"MetricName": "PipelineDurationMs", "Value": duration_ms, "Unit": "Milliseconds"},
         {"MetricName": "ReflectionLoops", "Value": loop_count, "Unit": "Count"},
         {"MetricName": "SearchLoopTriggered", "Value": 1 if loop_count > 0 else 0, "Unit": "Count"},
     ])
 
 
-def emit_run_failed() -> None:
-    _put([{"MetricName": "RunsFailed", "Value": 1, "Unit": "Count"}])
+def emit_run_failed(rate_limit: bool = False) -> None:
+    _put([
+        {"MetricName": "RunsCompleted", "Value": 0, "Unit": "Count"},
+        {"MetricName": "RunsFailed", "Value": 1, "Unit": "Count"},
+        {"MetricName": "RateLimitErrors", "Value": 1 if rate_limit else 0, "Unit": "Count"},
+    ])
