@@ -214,14 +214,23 @@ The `Dockerfile` uses a two-stage build: the first stage builds the React app wi
 
 ## Roadmap — v2
 
-The next version will add a live observability dashboard, surfacing aggregate stats computed directly from the existing run and step data:
+v2 migrates TraceAgent to AWS and adds a full observability layer in two phases.
 
-- **Total runs** and average steps per run
-- **Reflection loop rate** — how often the agent decides search results are insufficient and loops back
-- **Success rate** — completed runs vs. failed
-- **Average execution time** — full pipeline and per-stage breakdown
-- **Per-stage timing** — how long planner, search, reflection, and synthesis each take on average
+**Phase 1 — AWS deployment + CloudWatch**
 
-The goal is to make the observability explicit and visual: the user will be able to open the dashboard and immediately see the agent's behavior patterns across all runs.
+- Swap Hugging Face Spaces → EC2 / Elastic Beanstalk
+- Swap Neon PostgreSQL → RDS PostgreSQL
+- Wire existing Python logging to CloudWatch Logs via `watchtower` (already in `requirements.txt`, activates when `AWS_ACCESS_KEY_ID` is set)
+- CloudWatch Metrics: custom metrics for run count, success rate, reflection loop frequency, execution time
+- CloudWatch Dashboard: visual panels showing pipeline behavior over time
 
-No database schema changes are required — all metrics are derived from the existing `runs` and `steps` tables.
+**Phase 2 — Custom React dashboard**
+
+A frontend dashboard surfacing aggregate stats computed from the existing `runs` and `steps` tables — no schema changes required:
+
+- Total runs and average steps per run
+- Reflection loop rate — how often the agent loops back to search
+- Success rate — completed vs. failed runs
+- Average execution time — full pipeline and per-stage breakdown
+
+The combination of CloudWatch (infrastructure observability) and a custom React dashboard (application-level metrics) is the target end state.

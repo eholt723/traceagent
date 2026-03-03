@@ -9,3 +9,5 @@ tavily-python
 websockets
 pytest
 httpx
+boto3
+watchtower
