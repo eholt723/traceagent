@@ -24,7 +24,7 @@ export default function Header({ onNewResearch }) {
         <div className="flex items-center gap-3">
           <Link
             to="/dashboard"
-            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors hidden sm:block"
+            className="text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hidden sm:block"
           >
             Dashboard
           </Link>
