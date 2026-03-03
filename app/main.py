@@ -20,14 +20,15 @@ if settings.aws_access_key_id:
     try:
         import boto3
         import watchtower
-        _boto3_session = boto3.Session(
+        _boto3_client = boto3.client(
+            "logs",
             aws_access_key_id=settings.aws_access_key_id,
             aws_secret_access_key=settings.aws_secret_access_key,
             region_name=settings.aws_region,
         )
         _cw_handler = watchtower.CloudWatchLogHandler(
-            log_group=settings.cloudwatch_log_group,
-            boto3_session=_boto3_session,
+            log_group_name=settings.cloudwatch_log_group,
+            boto3_client=_boto3_client,
         )
         _cw_handler.setFormatter(logging.Formatter("%(levelname)s: %(name)s: %(message)s"))
         logging.getLogger().addHandler(_cw_handler)
