@@ -29,6 +29,7 @@ if settings.aws_access_key_id:
         _cw_handler = watchtower.CloudWatchLogHandler(
             log_group_name=settings.cloudwatch_log_group,
             boto3_client=_boto3_client,
+            send_interval=1,
         )
         _cw_handler.setFormatter(logging.Formatter("%(levelname)s: %(name)s: %(message)s"))
         logging.getLogger().addHandler(_cw_handler)

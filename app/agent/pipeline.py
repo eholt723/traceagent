@@ -11,6 +11,7 @@ from app.agent import planner, searcher, reflector, synthesizer
 from app.config import settings
 from app.crud import create_step, update_run_status
 from app.database import SessionLocal
+from app.metrics import emit_run_complete, emit_run_failed
 from app.schemas.step import StepCreate, StepType
 
 
@@ -33,6 +34,7 @@ def _step_payload(step, run_id: int) -> dict:
 
 async def run_pipeline(run_id: int, query: str, emit: Callable) -> None:
     db = SessionLocal()
+    pipeline_start = datetime.now(timezone.utc)
     try:
         update_run_status(db, run_id, "running")
         step_order = 0
@@ -106,9 +108,12 @@ async def run_pipeline(run_id: int, query: str, emit: Callable) -> None:
         ))
         await emit(run_id, "step_complete", _step_payload(step, run_id))
 
-        update_run_status(db, run_id, "complete",
-                          ended_at=datetime.now(timezone.utc),
-                          step_count=step_order)
+        ended_at = datetime.now(timezone.utc)
+        update_run_status(db, run_id, "complete", ended_at=ended_at, step_count=step_order)
+        emit_run_complete(
+            duration_ms=int((ended_at - pipeline_start).total_seconds() * 1000),
+            loop_count=loop_count,
+        )
         await emit(run_id, "run_complete", {"run_id": run_id})
 
     except RateLimitError:
@@ -120,10 +125,12 @@ async def run_pipeline(run_id: int, query: str, emit: Callable) -> None:
             "The limit resets every 24 hours."
         )
         update_run_status(db, run_id, "failed", ended_at=datetime.now(timezone.utc))
+        emit_run_failed()
         await emit(run_id, "run_error", {"run_id": run_id, "error": msg})
     except Exception as exc:
         logger.exception("run %s failed: %s", run_id, exc)
         update_run_status(db, run_id, "failed", ended_at=datetime.now(timezone.utc))
+        emit_run_failed()
         await emit(run_id, "run_error", {"run_id": run_id, "error": str(exc)})
     finally:
         await emit(run_id, None, None)  # sentinel — close WebSocket
