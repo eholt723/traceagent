@@ -12,7 +12,9 @@ An observable agentic research platform that runs a live AI pipeline and exposes
 
 The key distinction from a standard chatbot or RAG pipeline is that every decision is stored and displayed: what the planner decomposed the query into, what the reflector decided about search adequacy, whether it triggered another search loop, and what sources the synthesizer cited. Runs are public, forkable, and comparable side by side.
 
-**[Live demo](https://eholt723-traceagent.hf.space)**
+**[Live demo](https://eholt723-traceagent.hf.space)** — Hugging Face Spaces (Docker)
+
+**[AWS demo](http://32.192.175.42:8000)** — EC2 + RDS + CloudWatch (plain HTTP, no domain yet)
 
 ---
 
