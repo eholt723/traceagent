@@ -29,3 +29,9 @@ Thumbs.db
 
 # Binary assets (embedded as data URIs instead)
 ui/public/favicon.png
+
+# SSH keys
+*.pem
+
+# AWS credentials
+*.csv
