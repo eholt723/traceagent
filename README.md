@@ -24,6 +24,7 @@ The key distinction from a standard chatbot or RAG pipeline is that every decisi
 - **Fork** — clone any run with a modified query; lineage is tracked
 - **Compare** — side-by-side diff of two runs: synthesis, steps, sources, loop count
 - **Reflection loop** — agent explicitly evaluates whether search results are adequate and re-searches if not (up to 3 iterations)
+- **Pipeline dashboard** — live stats page showing run counts, success rate, avg execution time, and reflection loop frequency; auto-refreshes every 30 seconds
 
 ---
 
@@ -48,11 +49,12 @@ Each step is persisted to the database as it completes and broadcast to connecte
 | LLM | Groq — `llama-3.3-70b-versatile` |
 | Web search | Tavily Search API |
 | Backend | FastAPI, Python 3.12 |
-| Database | Neon (serverless PostgreSQL), SQLAlchemy ORM |
+| Database | PostgreSQL (RDS on AWS / Neon serverless), SQLAlchemy ORM |
 | Validation | Pydantic v2 (schema-first) |
 | Real-time | WebSocket via FastAPI |
 | Frontend | React 18, Vite, Tailwind CSS |
-| Deployment | Docker (multi-stage), Hugging Face Spaces |
+| Hosting | EC2 (t3.micro) + RDS (db.t4g.micro), Hugging Face Spaces (Docker) |
+| Observability | CloudWatch Logs + custom CloudWatch Metrics (6 metrics, live dashboard) |
 
 ---
 
@@ -168,13 +170,15 @@ traceagent/
 │   ├── api/
 │   │   ├── runs.py           # /runs endpoints
 │   │   ├── users.py          # /users/upsert
+│   │   ├── stats.py          # /stats endpoint
 │   │   └── ws.py             # WebSocket /ws/runs/{id}
-│   ├── schemas/              # Pydantic models (Run, Step, User, enums)
+│   ├── schemas/              # Pydantic models (Run, Step, User, Stats, enums)
 │   ├── models/               # SQLAlchemy ORM models
-│   ├── crud.py               # DB operations
+│   ├── crud.py               # DB operations (including get_stats aggregates)
+│   ├── metrics.py            # CloudWatch custom metrics (6 metrics per run)
 │   ├── database.py           # Engine, session, Base
 │   ├── config.py             # Settings from environment
-│   └── main.py               # FastAPI app, CORS, static file serving
+│   └── main.py               # FastAPI app, CORS, CloudWatch logging, static file serving
 ├── ui/
 │   └── src/
 │       ├── App.jsx                    # Router, user context, footer
@@ -188,7 +192,8 @@ traceagent/
 │       └── pages/
 │           ├── ActivityWall.jsx       # Public run feed + new research form
 │           ├── RunDetail.jsx          # Full step trace, live WS, fork, compare
-│           └── Compare.jsx            # Side-by-side run comparison
+│           ├── Compare.jsx            # Side-by-side run comparison
+│           └── Dashboard.jsx          # Pipeline metrics (auto-refreshes every 30s)
 ├── tests/
 ├── Dockerfile                # Multi-stage: Vite build → FastAPI serve
 └── requirements.txt
@@ -212,25 +217,31 @@ The `Dockerfile` uses a two-stage build: the first stage builds the React app wi
 
 ---
 
-## Roadmap — v2
+## AWS deployment
 
-v2 migrates TraceAgent to AWS and adds a full observability layer in two phases.
+TraceAgent runs on AWS within the free tier alongside the Hugging Face Spaces demo.
 
-**Phase 1 — AWS deployment + CloudWatch**
+**Infrastructure**
 
-- Swap Hugging Face Spaces → EC2 / Elastic Beanstalk
-- Swap Neon PostgreSQL → RDS PostgreSQL
-- Wire existing Python logging to CloudWatch Logs via `watchtower` (already in `requirements.txt`, activates when `AWS_ACCESS_KEY_ID` is set)
-- CloudWatch Metrics: custom metrics for run count, success rate, reflection loop frequency, execution time
-- CloudWatch Dashboard: visual panels showing pipeline behavior over time
+- **EC2** (t3.micro, us-east-1) — hosts the FastAPI backend and serves the built React frontend as static files
+- **RDS** (PostgreSQL, db.t4g.micro, us-east-1) — VPC-only, not publicly accessible; EC2 connects via private subnet
+- **CloudWatch Logs** — all application logs stream via `watchtower`; activates automatically when `AWS_ACCESS_KEY_ID` is present
+- **CloudWatch Metrics** — 6 custom metrics emitted per run to the `TraceAgent` namespace: `RunsCompleted`, `RunsFailed`, `RateLimitErrors`, `PipelineDurationMs`, `ReflectionLoops`, `SearchLoopTriggered`
 
-**Phase 2 — Custom React dashboard**
+**EC2 environment variables**
 
-A frontend dashboard surfacing aggregate stats computed from the existing `runs` and `steps` tables — no schema changes required:
+```
+GROQ_API_KEY=...
+TAVILY_API_KEY=...
+DATABASE_URL=postgresql://user:pass@your-rds-endpoint:5432/postgres
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_DEFAULT_REGION=us-east-1
+CLOUDWATCH_LOG_GROUP=traceagent
+```
 
-- Total runs and average steps per run
-- Reflection loop rate — how often the agent loops back to search
-- Success rate — completed vs. failed runs
-- Average execution time — full pipeline and per-stage breakdown
+**Starting the server**
 
-The combination of CloudWatch (infrastructure observability) and a custom React dashboard (application-level metrics) is the target end state.
+```bash
+.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
