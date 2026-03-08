@@ -38,7 +38,7 @@ export default function NameModal() {
             onChange={e => setName(e.target.value)}
             maxLength={100}
             autoFocus
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           />
           {error && (
             <p className="text-sm text-red-500">{error}</p>
@@ -46,7 +46,7 @@ export default function NameModal() {
           <button
             type="submit"
             disabled={!name.trim() || loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 py-3 transition-colors"
+            className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 py-3 transition-colors"
           >
             {loading ? 'Saving...' : 'Start researching'}
           </button>

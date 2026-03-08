@@ -42,7 +42,7 @@ function SearchOutput({ data }) {
             href={r.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+            className="text-cyan-600 dark:text-cyan-400 hover:underline font-medium"
           >
             {r.title || r.url}
           </a>

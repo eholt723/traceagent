@@ -28,7 +28,7 @@ function RunColumn({ run, navigate }) {
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
         <button
           onClick={() => navigate(`/runs/${run.id}`)}
-          className="text-xs text-indigo-500 hover:text-indigo-700 mb-2 block transition-colors"
+          className="text-xs text-cyan-500 hover:text-cyan-700 mb-2 block transition-colors"
         >
           Run #{run.id} &rarr;
         </button>

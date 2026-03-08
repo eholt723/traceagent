@@ -190,7 +190,7 @@ export default function RunDetail() {
             {run.forked_from_id && (
               <button
                 onClick={() => navigate(`/runs/${run.forked_from_id}`)}
-                className="text-indigo-400 hover:text-indigo-600 transition-colors"
+                className="text-cyan-400 hover:text-cyan-600 transition-colors"
               >
                 Forked from #{run.forked_from_id}
               </button>
@@ -220,7 +220,7 @@ export default function RunDetail() {
 
         {/* Fork panel */}
         {forkOpen && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm p-4 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-cyan-200 dark:border-cyan-800 shadow-sm p-4 mb-2">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Fork this run — edit the query if you like</p>
             <form onSubmit={handleFork} className="flex gap-2">
               <input
@@ -228,12 +228,12 @@ export default function RunDetail() {
                 value={forkQuery}
                 onChange={e => setForkQuery(e.target.value)}
                 autoFocus
-                className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
               <button
                 type="submit"
                 disabled={!forkQuery.trim() || forking}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                className="bg-cyan-600 hover:bg-cyan-700 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 {forking ? 'Forking...' : 'Fork'}
               </button>

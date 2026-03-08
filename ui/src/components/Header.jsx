@@ -17,7 +17,7 @@ export default function Header({ onNewResearch }) {
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <button
           onClick={() => navigate('/')}
-          className="font-semibold text-gray-900 dark:text-gray-100 text-lg tracking-tight hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          className="font-semibold text-gray-900 dark:text-gray-100 text-lg tracking-tight hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
         >
           TraceAgent
         </button>
@@ -50,7 +50,7 @@ export default function Header({ onNewResearch }) {
           </button>
           <button
             onClick={onNewResearch}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
             + New Research
           </button>
