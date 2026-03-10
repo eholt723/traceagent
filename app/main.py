@@ -87,7 +87,7 @@ if os.path.isdir(_dist):
             return FileResponse(candidate)
         return FileResponse(
             _index,
-            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+            headers={"Cache-Control": "no-cache"},
         )
 
     app.mount("/assets", StaticFiles(directory=os.path.join(_dist, "assets")), name="assets")
