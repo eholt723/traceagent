@@ -6,6 +6,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(name)s: %(messa
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 import app.models  # register all ORM models with Base before create_all
@@ -76,4 +77,17 @@ def health():
 # Serve built React app in production (ui/dist must exist)
 _dist = os.path.join(os.path.dirname(__file__), "..", "ui", "dist")
 if os.path.isdir(_dist):
-    app.mount("/", StaticFiles(directory=_dist, html=True), name="static")
+    _index = os.path.join(_dist, "index.html")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa_fallback(full_path: str):
+        # Serve actual files from dist; fall back to index.html for SPA routes
+        candidate = os.path.join(_dist, full_path)
+        if full_path and os.path.isfile(candidate):
+            return FileResponse(candidate)
+        return FileResponse(
+            _index,
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+        )
+
+    app.mount("/assets", StaticFiles(directory=os.path.join(_dist, "assets")), name="assets")
