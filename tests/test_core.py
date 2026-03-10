@@ -1,3 +1,4 @@
+import pytest
 from sqlalchemy import inspect
 from unittest.mock import patch
 
@@ -56,3 +57,15 @@ def test_reflector_fallback_on_missing_adequate_key():
     with patch("app.agent.reflector.chat_json", return_value={"reason": "no adequate key"}):
         result = reflector.run("test query", [])
     assert result["adequate"] is True  # defaults to adequate per reflector fallback logic
+
+
+@pytest.mark.parametrize("bad_response", [
+    {},
+    {"unexpected": "key"},
+    {"sub_questions": None},
+    {"sub_questions": "not a list"},
+])
+def test_planner_fallback_on_various_bad_responses(bad_response):
+    with patch("app.agent.planner.chat_json", return_value=bad_response):
+        result = planner.run("what is quantum computing?")
+    assert result == {"sub_questions": ["what is quantum computing?"]}
