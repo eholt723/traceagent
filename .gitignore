@@ -1,6 +1,7 @@
 # Environment
 .env
 .env.*
+.vscode/
 
 # Claude
 CLAUDE.md
