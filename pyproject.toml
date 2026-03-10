@@ -1,0 +1,17 @@
+[project]
+name = "traceagent"
+version = "0.1.0"
+description = "Observable Agentic Research Platform"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/metrics.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 70
