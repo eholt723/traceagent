@@ -23,6 +23,12 @@ export default function Header({ onNewResearch }) {
         </button>
         <div className="flex items-center gap-3">
           <Link
+            to="/about"
+            className="text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hidden sm:block"
+          >
+            About
+          </Link>
+          <Link
             to="/dashboard"
             className="text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hidden sm:block"
           >
