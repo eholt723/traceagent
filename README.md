@@ -80,25 +80,25 @@ Each step is persisted to the database as it completes and broadcast to connecte
 ┌────────────────────────────────────────────────────────┐
 │                   Agent Pipeline                       │
 │                                                        │
-│  ┌──────────┐    ┌──────────┐    ┌────────────┐        │
-│  │ Planner  │───▶│ Searcher │───▶│ Reflector  │        │
-│  │ (Groq)   │    │ (Tavily) │    │  (Groq)    │        │
-│  └──────────┘    └──────────┘    └──────┬─────┘        │
-│                       ▲                 │ adequate      │
-│                       └── re-search ────┤               │
-│                                         ▼               │
-│                                  ┌────────────┐         │
-│                                  │ Synthesizer│         │
-│                                  │  (Groq)    │         │
-│                                  └────────────┘         │
+│     ┌──────────┐     ┌──────────┐     ┌──────────┐     │
+│     │ Planner  │────▶│ Searcher │────▶│ Reflector│     │
+│     │ (Groq)   │     │ (Tavily) │     │  (Groq)  │     │
+│     └──────────┘     └──────────┘     └─────┬────┘     │
+│                            ▲                │ adequate │
+│                            └── re-search ───┤          │
+│                                             ▼          │
+│                                     ┌────────────┐     │
+│                                     │ Synthesizer│     │
+│                                     │  (Groq)    │     │
+│                                     └────────────┘     │
 └──────────────────────┬─────────────────────────────────┘
                        │ step records written per stage
             ┌──────────┴───────────────┐
             ▼                          ▼
-┌─────────────────────┐    ┌───────────────────────┐
+┌─────────────────────┐    ┌────────────────────────┐
 │  PostgreSQL         │    │  AWS CloudWatch        │
 │  (RDS / Neon)       │    │  Logs + 6 Metrics      │
-└─────────────────────┘    └───────────────────────┘
+└─────────────────────┘    └────────────────────────┘
 ```
 
 | Layer | Responsibility |
@@ -110,6 +110,7 @@ Each step is persisted to the database as it completes and broadcast to connecte
 | Tavily | Web search — one request per sub-question from the planner |
 | PostgreSQL | Persistent store for Runs, Steps, Users; queried for activity wall and stats |
 | CloudWatch | Structured logs (watchtower) + 6 custom metrics per run in `TraceAgent` namespace |
+| Migrations | Alembic tracks schema versions; migrations applied manually before deploy |
 
 ---
 
