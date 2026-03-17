@@ -28,6 +28,7 @@ const ACHIEVEMENTS = [
   'Pipeline stats dashboard: success rate, avg duration, reflection loop rate, step counts',
   'CloudWatch custom metrics and structured log shipping from EC2 to AWS (6 metrics, log group)',
   'Deployed two ways: Docker container on HuggingFace Spaces, and EC2 + RDS + systemd on AWS',
+  'Alembic database migrations with versioned schema history; applied incrementally to live PostgreSQL without table recreation',
   '20 unit tests with pytest covering all API routes and agent logic; all external calls mocked (SQLite in-memory, patched LLM and search) — no API keys required; 73% coverage enforced and CI runs on every push via GitHub Actions',
 ]
 
@@ -44,6 +45,7 @@ const STACK = [
   { name: 'CloudWatch', role: 'Logs and custom metrics' },
   { name: 'Docker', role: 'HuggingFace Spaces deployment' },
   { name: 'Pydantic', role: 'Schema-first data validation' },
+  { name: 'Alembic', role: 'Versioned database migrations' },
 ]
 
 export default function About() {
