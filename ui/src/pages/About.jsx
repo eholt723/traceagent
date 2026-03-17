@@ -28,7 +28,7 @@ const ACHIEVEMENTS = [
   'Pipeline stats dashboard: success rate, avg duration, reflection loop rate, step counts',
   'CloudWatch custom metrics and structured log shipping from EC2 to AWS (6 metrics, log group)',
   'Deployed two ways: Docker container on HuggingFace Spaces, and EC2 + RDS + systemd on AWS',
-  'Full test suite (unit + integration) with pytest; all tests pass before every push',
+  '20 unit tests with pytest covering all API routes and agent logic; all external calls mocked (SQLite in-memory, patched LLM and search) — no API keys required; 73% coverage enforced and CI runs on every push via GitHub Actions',
 ]
 
 const STACK = [

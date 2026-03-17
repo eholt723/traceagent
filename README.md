@@ -6,6 +6,8 @@ app_port: 7860
 pinned: false
 ---
 
+[![CI](https://github.com/eholt723/traceagent/actions/workflows/ci.yml/badge.svg)](https://github.com/eholt723/traceagent/actions/workflows/ci.yml)
+
 # TraceAgent
 
 An observable agentic research platform that runs a live AI pipeline and exposes every internal reasoning step in real time. Enter a research question, watch the agent plan its approach, search the web, decide whether the results are sufficient, and synthesize a final report — with the full reasoning trace visible and persistent.
@@ -114,10 +116,10 @@ Open `http://localhost:5173`.
 ### Tests
 
 ```bash
-.venv/bin/python -m pytest tests/ -v
+.venv/bin/python -m pytest tests/unit/ -v
 ```
 
-> Note: the test suite calls the real Groq and Tavily APIs. Avoid running it on days when you need the Groq free-tier token budget for demos.
+All external calls are mocked — no API keys or database credentials required to run the tests.
 
 ---
 
