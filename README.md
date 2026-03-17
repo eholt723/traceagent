@@ -80,10 +80,10 @@ Each step is persisted to the database as it completes and broadcast to connecte
 ┌────────────────────────────────────────────────────────┐
 │                   Agent Pipeline                       │
 │                                                        │
-│     ┌──────────┐     ┌──────────┐     ┌──────────┐     │
-│     │ Planner  │────▶│ Searcher │────▶│ Reflector│     │
-│     │ (Groq)   │     │ (Tavily) │     │  (Groq)  │     │
-│     └──────────┘     └──────────┘     └─────┬────┘     │
+│     ┌──────────┐     ┌──────────┐     ┌───────────┐    │
+│     │ Planner  │────▶│ Searcher │────▶│ Reflector │    │
+│     │ (Groq)   │     │ (Tavily) │     │  (Groq)   │    │
+│     └──────────┘     └──────────┘     └─────┬─────┘    │
 │                            ▲                │ adequate │
 │                            └── re-search ───┤          │
 │                                             ▼          │
