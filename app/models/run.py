@@ -22,6 +22,7 @@ class Run(Base):
     step_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     forked_from_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("runs.id"), nullable=True)
     is_public: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    client_info: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user: Mapped["User"] = relationship("User", back_populates="runs")
     steps: Mapped[list["Step"]] = relationship("Step", back_populates="run", order_by="Step.step_order")

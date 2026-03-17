@@ -12,3 +12,4 @@ pytest-cov
 httpx
 boto3
 watchtower
+alembic

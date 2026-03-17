@@ -56,9 +56,60 @@ Each step is persisted to the database as it completes and broadcast to connecte
 | Database | PostgreSQL (RDS on AWS / Neon serverless), SQLAlchemy ORM |
 | Validation | Pydantic v2 (schema-first) |
 | Real-time | WebSocket via FastAPI |
-| Frontend | React 18, Vite, Tailwind CSS |
+| Frontend | React 19, Vite, Tailwind CSS |
 | Hosting | EC2 (t3.micro) + RDS (db.t4g.micro), Hugging Face Spaces (Docker) |
 | Observability | CloudWatch Logs + custom CloudWatch Metrics (6 metrics, live dashboard) |
+
+---
+
+## Architecture
+
+```
+┌────────────────────────────────────────────────────────┐
+│                    Browser (React)                     │
+│      ActivityWall · RunDetail · Compare · Dashboard    │
+└───────────────────────────┬────────────────────────────┘
+                            │ HTTP + WebSocket
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                   FastAPI backend                      │
+│    /runs · /stats · /users/upsert · /ws/runs/{id}      │
+└──────────────────────┬─────────────────────────────────┘
+                       │ background task (POST /runs)
+                       ▼
+┌────────────────────────────────────────────────────────┐
+│                   Agent Pipeline                       │
+│                                                        │
+│  ┌──────────┐    ┌──────────┐    ┌────────────┐        │
+│  │ Planner  │───▶│ Searcher │───▶│ Reflector  │        │
+│  │ (Groq)   │    │ (Tavily) │    │  (Groq)    │        │
+│  └──────────┘    └──────────┘    └──────┬─────┘        │
+│                       ▲                 │ adequate      │
+│                       └── re-search ────┤               │
+│                                         ▼               │
+│                                  ┌────────────┐         │
+│                                  │ Synthesizer│         │
+│                                  │  (Groq)    │         │
+│                                  └────────────┘         │
+└──────────────────────┬─────────────────────────────────┘
+                       │ step records written per stage
+            ┌──────────┴───────────────┐
+            ▼                          ▼
+┌─────────────────────┐    ┌───────────────────────┐
+│  PostgreSQL         │    │  AWS CloudWatch        │
+│  (RDS / Neon)       │    │  Logs + 6 Metrics      │
+└─────────────────────┘    └───────────────────────┘
+```
+
+| Layer | Responsibility |
+|---|---|
+| Browser (React) | SPA: submits queries, renders step trace, streams live via WebSocket |
+| FastAPI backend | Routes, background task dispatch, WebSocket hub, static file serving |
+| Agent Pipeline | Orchestrates planner → search → reflect → synthesize; persists each step |
+| Groq (LLM) | Planner decomposition, reflection adequacy judgment, synthesis report |
+| Tavily | Web search — one request per sub-question from the planner |
+| PostgreSQL | Persistent store for Runs, Steps, Users; queried for activity wall and stats |
+| CloudWatch | Structured logs (watchtower) + 6 custom metrics per run in `TraceAgent` namespace |
 
 ---
 
@@ -170,6 +221,7 @@ traceagent/
 │   │   ├── searcher.py       # Runs Tavily search per sub-question
 │   │   ├── reflector.py      # Evaluates adequacy, returns refined queries if needed
 │   │   ├── synthesizer.py    # Writes markdown report with inline citations
+│   │   ├── search_client.py  # Tavily client wrapper
 │   │   └── llm.py            # Groq wrapper (chat, chat_json)
 │   ├── api/
 │   │   ├── runs.py           # /runs endpoints
@@ -194,14 +246,65 @@ traceagent/
 │       │   ├── StepBlock.jsx          # Collapsible step renderer
 │       │   └── NameModal.jsx          # First-visit name prompt
 │       └── pages/
+│           ├── About.jsx              # Portfolio/employer showcase page
 │           ├── ActivityWall.jsx       # Public run feed + new research form
 │           ├── RunDetail.jsx          # Full step trace, live WS, fork, compare
 │           ├── Compare.jsx            # Side-by-side run comparison
 │           └── Dashboard.jsx          # Pipeline metrics (auto-refreshes every 30s)
 ├── tests/
+│   ├── conftest.py           # SQLite in-memory fixtures, pipeline mocked, get_db override
+│   └── unit/
+│       ├── test_core.py      # Unit tests for planner + reflector (parametrized LLM response shapes)
+│       └── test_routes.py    # Full route coverage + stats endpoint
+├── migrations/
+│   ├── env.py                # Alembic runtime config — reads DATABASE_URL, sets target_metadata
+│   └── versions/             # One .py file per schema revision
+├── scripts/
+│   └── test_cloudwatch.py    # Direct boto3 credential diagnostic
+├── alembic.ini               # Alembic config (URL injected at runtime from env)
 ├── Dockerfile                # Multi-stage: Vite build → FastAPI serve
 └── requirements.txt
 ```
+
+---
+
+## Migrations
+
+TraceAgent uses [Alembic](https://alembic.sqlalchemy.org/) for database migrations. Schema changes are tracked as versioned files in `migrations/versions/` so they can be applied incrementally to any live database without recreating tables from scratch.
+
+### Apply all pending migrations
+
+```bash
+export DATABASE_URL=<your-connection-string>
+.venv/bin/alembic upgrade head
+```
+
+Run this against each database separately — AWS RDS and Neon are independent and both need to be updated when a schema change is deployed.
+
+**Always review the migration file before running against production.** The migration files are in `migrations/versions/`.
+
+### Generate a new migration after changing ORM models
+
+```bash
+export DATABASE_URL=<your-connection-string>
+.venv/bin/alembic revision --autogenerate -m "describe the change"
+```
+
+Alembic diffs the SQLAlchemy ORM models (`app/models/`) against the live schema and generates a migration file. Review the generated file before committing — autogenerate is not always perfect (it can miss some constraint changes or generate spurious ops).
+
+### View migration history
+
+```bash
+.venv/bin/alembic history
+.venv/bin/alembic current   # what revision the live DB is at
+```
+
+### Notes
+
+- Migrations must be run against both **AWS RDS** and **Neon** separately when deploying schema changes.
+- Neon connection strings require `?sslmode=require` — `migrations/env.py` adds it automatically if missing.
+- `app/main.py` retains `create_all` as a fallback for environments that haven't been migrated yet (CI, fresh local installs). Once Alembic has been applied, `alembic_version` exists and `create_all` becomes a no-op.
+- The `migrations/` folder is committed to the repo.
 
 ---
 

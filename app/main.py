@@ -45,7 +45,13 @@ if settings.aws_access_key_id:
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    # create_all is kept for environments that haven't been migrated yet
+    # (CI, local SQLite, fresh deployments before alembic upgrade head is run).
+    # Once Alembic has been applied, the alembic_version table exists and
+    # create_all becomes a no-op (SQLAlchemy skips tables that already exist).
+    from sqlalchemy import inspect as sa_inspect
+    if "alembic_version" not in sa_inspect(engine).get_table_names():
+        Base.metadata.create_all(bind=engine)
     yield
 
 
