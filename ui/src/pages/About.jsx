@@ -19,6 +19,33 @@ const PIPELINE_STEPS = [
   },
 ]
 
+const USE_CASES = [
+  {
+    title: 'Competitive Research',
+    desc: 'A product manager asks "What are the top complaints about Notion?" The agent searches, decides the first results are shallow, loops again, and returns a sourced synthesis. Every search and judgment is visible, so you can tell whether the output is grounded.',
+  },
+  {
+    title: 'Technical Due Diligence',
+    desc: 'An investor or engineering lead needs a fast read on an unfamiliar technology stack. The agent decomposes the question into specific sub-topics, searches each independently, and flags when it found conflicting or sparse results.',
+  },
+  {
+    title: 'Regulated Industry Research',
+    desc: 'Compliance teams need to know where search results came from. Every source URL, every reflection decision, and every search round is stored in the database and can be re-opened later — not just the summary.',
+  },
+  {
+    title: 'AI System Evaluation',
+    desc: 'Teams testing different prompting strategies or LLMs can fork any past run with a modified query, then compare it side by side. The step trace shows where each version diverged — planner output, search rounds, reflection decisions.',
+  },
+  {
+    title: 'Internal Knowledge Gaps',
+    desc: 'A researcher needs to understand a domain they don\'t know well. The reflection loop surfaces when initial results were insufficient and forced another search round, making the agent\'s uncertainty explicit rather than hidden.',
+  },
+  {
+    title: 'Agent Framework Audit',
+    desc: 'A platform team building or reviewing an agentic pipeline can use TraceAgent as a reference for what observability looks like end to end: each step typed, timed, logged, streamed via WebSocket, and shipped to CloudWatch.',
+  },
+]
+
 const ACHIEVEMENTS = [
   'Full reasoning trace visible to the user — planner, search, reflection, and synthesis steps logged individually',
   'Reflection loop is explicit: the agent decides when results are insufficient and triggers another search round',
@@ -107,6 +134,27 @@ export default function About() {
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1">{step.label}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{step.desc}</p>
                 </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Where This Gets Used */}
+        <section>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Where This Gets Used
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+            Most AI tools give you a final answer with no way to know how it was reached or whether to trust it. TraceAgent stores the full reasoning chain — every search, every reflection decision, every loop — so the output is auditable, not just readable. It applies anywhere that "show your work" matters more than "give me an answer fast." Here's where it fits.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {USE_CASES.map((uc) => (
+              <div
+                key={uc.title}
+                className="bg-gray-800 border border-gray-700 rounded-xl p-4"
+              >
+                <p className="text-sm font-semibold text-gray-100 mb-1">{uc.title}</p>
+                <p className="text-sm text-gray-400 leading-relaxed">{uc.desc}</p>
               </div>
             ))}
           </div>

@@ -175,6 +175,26 @@ All external calls are mocked — no API keys or database credentials required t
 
 ---
 
+## Design decisions
+
+**Single server serves both API and frontend.** The Dockerfile builds the React app with `VITE_API_URL=""`, then copies the compiled `ui/dist/` into the Python image. FastAPI serves the static files directly alongside the API routes via a catch-all SPA fallback. The alternative — a separate static hosting layer (nginx, S3, CDN) — would be standard on real production infrastructure but adds cost and operational complexity that isn't justified for a portfolio demo on Hugging Face Spaces or a single EC2 instance.
+
+**In-process WebSocket hub instead of a message broker.** Real-time step events are routed through a plain `dict[int, asyncio.Queue]` in `app/api/ws.py`. A production system with multiple workers would need Redis Pub/Sub or a similar broker so WebSocket connections on one worker can receive events emitted by another. With a single Uvicorn process (which is all free-tier EC2 justifies), the in-process queue is correct, simpler, and eliminates an entire infrastructure dependency.
+
+**`create_all` kept alongside Alembic migrations.** `app/main.py` runs `Base.metadata.create_all()` at startup only when the `alembic_version` table is absent. This handles CI (SQLite in-memory, no migration history), fresh local installs, and any environment where `alembic upgrade head` hasn't been run yet. The alternative — removing `create_all` entirely and requiring migrations everywhere — would break the test suite and complicate onboarding without meaningful benefit at this scale.
+
+---
+
+## Future improvements
+
+- **HTTPS and a real domain** — the AWS deployment runs on a plain EC2 IP over HTTP. Adding a domain, ACM certificate, and an ALB or nginx TLS termination layer is straightforward but costs money and isn't necessary for demo purposes.
+- **Authentication** — users are identified by a browser UUID stored in localStorage. A real deployment would replace this with OAuth or session tokens so runs can be access-controlled and forked runs associated to verified identities.
+- **Multi-worker WebSocket support** — the current WebSocket hub is an in-process dict, which breaks if Uvicorn runs with more than one worker. Replacing it with Redis Pub/Sub would allow horizontal scaling.
+- **Streaming synthesis output** — the synthesizer waits for the full LLM response before emitting a step event. Token-level streaming from Groq would let the frontend render the report as it's being written rather than all at once at the end.
+- **Run retention policy** — all runs are kept indefinitely. A production system would add a TTL or archival policy to prevent unbounded database growth on the free-tier Neon instance.
+
+---
+
 ## API
 
 ### `POST /runs`
