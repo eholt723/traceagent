@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     cloudwatch_log_group: str = "traceagent"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 settings = Settings()

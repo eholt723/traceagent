@@ -6,7 +6,7 @@ app_port: 7860
 pinned: false
 ---
 
-[![CI](https://github.com/eholt723/traceagent/actions/workflows/ci.yml/badge.svg)](https://github.com/eholt723/traceagent/actions/workflows/ci.yml)
+[![CI/CD](https://github.com/eholt723/traceagent/actions/workflows/ci.yml/badge.svg)](https://github.com/eholt723/traceagent/actions/workflows/ci.yml)
 
 # TraceAgent
 
@@ -330,6 +330,8 @@ Alembic diffs the SQLAlchemy ORM models (`app/models/`) against the live schema 
 ---
 
 ## Deployment
+
+Every push to `main` triggers the CI/CD pipeline. If all checks pass, the workflow automatically deploys to both Hugging Face Spaces ([https://eholt723-traceagent.hf.space](https://eholt723-traceagent.hf.space)) and the AWS EC2 instance ([http://32.192.175.42:8000](http://32.192.175.42:8000)).
 
 The `Dockerfile` uses a two-stage build: the first stage builds the React app with Vite (`VITE_API_URL=""` so all requests go to the same origin), the second stage runs the FastAPI backend and serves the built frontend as static files.
 
