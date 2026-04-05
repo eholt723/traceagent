@@ -39,11 +39,27 @@ jobs:
           git remote add space https://eholt723:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/eholt723/traceagent
           git push space main --force
 
-      - name: Deploy to EC2
+      - name: Setup SSH
+        env:
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/key.pem
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/key.pem
           chmod 600 ~/.ssh/key.pem
-          ssh-keyscan ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/key.pem ec2-user@${{ secrets.EC2_HOST }} \
-            "cd traceagent && git pull && cd ui && VITE_API_URL='' npm run build && cd .. && sudo systemctl restart traceagent"
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Pull latest code on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: ssh -i ~/.ssh/key.pem ec2-user@"$EC2_HOST" "cd traceagent && git pull" 2>&1
+
+      - name: Build frontend on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: ssh -i ~/.ssh/key.pem ec2-user@"$EC2_HOST" "cd traceagent/ui && VITE_API_URL='' npm run build" 2>&1
+
+      - name: Restart service on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: ssh -i ~/.ssh/key.pem ec2-user@"$EC2_HOST" "sudo systemctl restart traceagent" 2>&1
