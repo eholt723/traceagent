@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const TYPE_LABEL = {
   planner:    { label: 'Planner',    bg: 'bg-violet-100 dark:bg-violet-900/40', text: 'text-violet-700 dark:text-violet-300' },
@@ -89,7 +90,7 @@ function SynthesisOutput({ data }) {
   const report = data?.report || ''
   return (
     <div className="mt-3 prose prose-sm max-w-none text-gray-800 dark:text-gray-200 dark:prose-invert">
-      <ReactMarkdown>{report}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</ReactMarkdown>
     </div>
   )
 }
