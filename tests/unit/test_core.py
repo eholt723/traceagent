@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import inspect
 from unittest.mock import patch
 
-from app.agent import planner, reflector
+from app.agent import planner, reflector, synthesizer
 
 
 def test_tables_exist(engine):
@@ -69,3 +69,42 @@ def test_planner_fallback_on_various_bad_responses(bad_response):
     with patch("app.agent.planner.chat_json", return_value=bad_response):
         result = planner.run("what is quantum computing?")
     assert result == {"sub_questions": ["what is quantum computing?"]}
+
+
+def test_synthesizer_run_returns_report():
+    with patch("app.agent.synthesizer.chat", return_value="A report with no citations."):
+        result = synthesizer.run("test query", [{"title": "t", "url": "u", "content": "c"}])
+    assert result == {"report": "A report with no citations."}
+
+
+def test_fix_bracket_citations_converts_exact_title_match():
+    results = [{"title": "Beneficial effects of intermittent fasting: a narrative review - PMC",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9946909"}]
+    report = "Weight loss is well documented 【Beneficial effects of intermittent fasting: a narrative review - PMC】."
+    fixed = synthesizer._fix_bracket_citations(report, results)
+    assert fixed == (
+        "Weight loss is well documented "
+        "[Beneficial effects of intermittent fasting: a narrative review - PMC]"
+        "(https://pmc.ncbi.nlm.nih.gov/articles/PMC9946909)."
+    )
+
+
+def test_fix_bracket_citations_matches_truncated_title():
+    results = [{"title": "Intermittent fasting strategies and their effects on body weight and metabolism",
+                "url": "https://example.com/ifs"}]
+    report = "Adherence varies 【Intermittent fasting strategies and their effects on body weight and ...】."
+    fixed = synthesizer._fix_bracket_citations(report, results)
+    assert "[Intermittent fasting strategies and their effects on body weight and metabolism](https://example.com/ifs)" in fixed
+    assert "【" not in fixed and "】" not in fixed
+
+
+def test_fix_bracket_citations_strips_unmatched_bracket():
+    report = "Something claimed 【a citation with no matching source at all】."
+    fixed = synthesizer._fix_bracket_citations(report, [{"title": "Unrelated source", "url": "https://example.com"}])
+    assert fixed == "Something claimed a citation with no matching source at all."
+
+
+def test_fix_bracket_citations_noop_when_no_brackets_present():
+    report = "A clean report with a real [markdown link](https://example.com) and no brackets."
+    fixed = synthesizer._fix_bracket_citations(report, [{"title": "x", "url": "https://example.com"}])
+    assert fixed == report
