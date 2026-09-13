@@ -120,7 +120,7 @@ async def run_pipeline(run_id: int, query: str, emit: Callable) -> None:
         logger.warning("run %s hit Groq rate limit", run_id)
         msg = (
             "Groq free-tier daily token limit reached. "
-            "This app runs on llama-3.3-70b-versatile via Groq's free API — "
+            "This app runs on openai/gpt-oss-120b via Groq's free API — "
             "swapping to a paid tier or a different model removes this restriction. "
             "The limit resets every 24 hours."
         )

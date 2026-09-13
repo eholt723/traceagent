@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     tavily_api_key: str = ""
     database_url: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
     max_search_loops: int = 3
     search_results_per_query: int = 5
 

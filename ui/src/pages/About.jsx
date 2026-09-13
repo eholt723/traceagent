@@ -64,7 +64,7 @@ const STACK = [
   { name: 'React', role: 'Frontend UI with Vite' },
   { name: 'PostgreSQL', role: 'Run and step storage (AWS RDS)' },
   { name: 'SQLAlchemy', role: 'ORM and query layer' },
-  { name: 'Groq', role: 'LLM inference (llama-3.3-70b)' },
+  { name: 'Groq', role: 'LLM inference (gpt-oss-120b)' },
   { name: 'Tavily', role: 'Live web search API' },
   { name: 'WebSockets', role: 'Real-time step streaming' },
   { name: 'AWS EC2', role: 'Production server (systemd)' },

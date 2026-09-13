@@ -50,7 +50,7 @@ Each step is persisted to the database as it completes and broadcast to connecte
 | Layer | Technology |
 |---|---|
 | Agent pipeline | Custom (no framework) |
-| LLM | Groq — `llama-3.3-70b-versatile` |
+| LLM | Groq — `openai/gpt-oss-120b` |
 | Web search | Tavily Search API |
 | Backend | FastAPI, Python 3.12 |
 | Database | PostgreSQL (RDS on AWS / Neon serverless), SQLAlchemy ORM |
