@@ -1,3 +1,5 @@
+import re
+
 from app.agent.llm import chat
 
 _SYSTEM = (
@@ -20,6 +22,30 @@ def _format_results(results: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def _normalize(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", s.lower())
+
+
+def _fix_bracket_citations(report: str, results: list[dict]) -> str:
+    """gpt-oss-120b sometimes ignores the [Title](URL) instruction and falls back to its
+    own 【Title】 citation style. Turn any that slip through into real links by matching
+    the bracketed text against the actual source list; strip to plain text if no match."""
+
+    def replace(match: re.Match) -> str:
+        raw = match.group(1).strip()
+        norm_raw = _normalize(raw)
+        if norm_raw:
+            for r in results:
+                title = (r.get("title") or "").strip()
+                url = r.get("url") or ""
+                norm_title = _normalize(title)
+                if title and url and norm_title and (norm_title in norm_raw or norm_raw in norm_title):
+                    return f"[{title}]({url})"
+        return raw
+
+    return re.sub(r"【([^【】]*)】", replace, report)
+
+
 def run(query: str, results: list[dict]) -> dict:
     formatted = _format_results(results)
     messages = [
@@ -27,4 +53,5 @@ def run(query: str, results: list[dict]) -> dict:
         {"role": "user", "content": f"Research query: {query}\n\nSources:\n{formatted}"},
     ]
     report = chat(messages, reasoning_effort="medium")
+    report = _fix_bracket_citations(report, results)
     return {"report": report}
