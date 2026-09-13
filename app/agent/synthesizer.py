@@ -4,7 +4,10 @@ _SYSTEM = (
     "You are a research analyst. Given a query and search results, write a comprehensive, "
     "well-structured markdown report. Include an executive summary, key findings, "
     "relevant comparisons, and conclusions. "
-    "When citing sources, use inline markdown links in the format [Title](URL). "
+    "When citing sources, you MUST use inline markdown links in the exact format [Title](URL), "
+    "with the real URL from the sources list. "
+    "Do NOT use bracketed citation markers like 【Title】 or [1] — every citation must be a clickable "
+    "markdown link with a URL, never a bare title in brackets. "
     "Only cite sources that appear in the provided list — do not invent citations. "
     "Be specific and factual — base your report only on the provided results."
 )
@@ -23,5 +26,5 @@ def run(query: str, results: list[dict]) -> dict:
         {"role": "system", "content": _SYSTEM},
         {"role": "user", "content": f"Research query: {query}\n\nSources:\n{formatted}"},
     ]
-    report = chat(messages)
+    report = chat(messages, reasoning_effort="medium")
     return {"report": report}

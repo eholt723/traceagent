@@ -7,11 +7,11 @@ from app.config import settings
 _client = Groq(api_key=settings.groq_api_key)
 
 
-def chat(messages: list[dict], json_mode: bool = False) -> str:
+def chat(messages: list[dict], json_mode: bool = False, reasoning_effort: str = "low") -> str:
     kwargs = {
         "model": settings.groq_model,
         "messages": messages,
-        "reasoning_effort": "low",
+        "reasoning_effort": reasoning_effort,
         "include_reasoning": False,
     }
     if json_mode:
