@@ -72,10 +72,12 @@ def test_planner_fallback_on_various_bad_responses(bad_response):
     assert result == {"sub_questions": ["what is quantum computing?"]}
 
 
-def test_synthesizer_run_returns_report():
-    with patch("app.agent.synthesizer.chat", return_value="A report with no citations."):
-        result = synthesizer.run("test query", [{"title": "t", "url": "u", "content": "c"}])
-    assert result == {"report": "A report with no citations."}
+def test_synthesizer_run_appends_sources_section():
+    with patch("app.agent.synthesizer.chat", return_value="A clean report body."):
+        result = synthesizer.run("test query", [{"title": "t", "url": "https://example.com/t", "content": "c"}])
+    assert result["report"].startswith("A clean report body.")
+    assert "## Sources" in result["report"]
+    assert "[t](https://example.com/t)" in result["report"]
 
 
 def test_fix_bracket_citations_converts_exact_title_match():
@@ -122,28 +124,32 @@ def test_dedupe_by_url_removes_repeats_across_search_rounds():
     assert [r["url"] for r in deduped] == ["https://a.com", "https://b.com"]
 
 
-def test_format_sources_numbers_sequentially():
+def test_format_sources_dedupes_and_lists_titles():
     results = [{"title": "First", "url": "https://a.com", "content": "x"},
+               {"title": "First dup", "url": "https://a.com", "content": "x"},
                {"title": "Second", "url": "https://b.com", "content": "y"}]
-    formatted, numbered = synthesizer._format_sources(results)
-    assert "[1] Title: First" in formatted
-    assert "[2] Title: Second" in formatted
-    assert numbered == results
+    formatted, deduped = synthesizer._format_sources(results)
+    assert "Title: First" in formatted
+    assert "Title: Second" in formatted
+    assert len(deduped) == 2
 
 
-def test_resolve_numbered_citations_converts_known_index():
-    numbered = [{"title": "First Source", "url": "https://a.com"},
-                {"title": "Second Source", "url": "https://b.com"}]
-    report = "A claim [1] and another claim [2]."
-    resolved = synthesizer._resolve_numbered_citations(report, numbered)
-    assert resolved == "A claim [First Source](https://a.com) and another claim [Second Source](https://b.com)."
+def test_build_sources_section_lists_each_source_as_a_link():
+    sources = [{"title": "First Source", "url": "https://a.com"},
+               {"title": "Second Source", "url": "https://b.com"}]
+    section = synthesizer._build_sources_section(sources)
+    assert "## Sources" in section
+    assert "- [First Source](https://a.com)" in section
+    assert "- [Second Source](https://b.com)" in section
 
 
-def test_resolve_numbered_citations_leaves_out_of_range_index_untouched():
-    numbered = [{"title": "Only Source", "url": "https://a.com"}]
-    report = "A claim [1] and a bogus one [99]."
-    resolved = synthesizer._resolve_numbered_citations(report, numbered)
-    assert resolved == "A claim [Only Source](https://a.com) and a bogus one [99]."
+def test_build_sources_section_empty_when_no_sources():
+    assert synthesizer._build_sources_section([]) == ""
+
+
+def test_build_sources_section_falls_back_to_url_when_title_missing():
+    section = synthesizer._build_sources_section([{"title": "", "url": "https://a.com"}])
+    assert "- [https://a.com](https://a.com)" in section
 
 
 def test_chat_json_returns_empty_dict_on_malformed_output():
