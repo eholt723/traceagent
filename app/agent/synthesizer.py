@@ -10,7 +10,9 @@ _SYSTEM = (
     "placed immediately after the claim it supports. Do not write out the source title or "
     "URL yourself, do not invent markdown links, and do not use any other citation style. "
     "Only cite numbers that appear in the provided source list — do not invent citations. "
-    "Be specific and factual — base your report only on the provided results."
+    "Be specific and factual — base your report only on the provided results. "
+    "Use only plain markdown syntax — never raw HTML tags such as <br>. Inside a markdown "
+    "table cell, separate multiple points with '; ' instead of a line break."
 )
 
 
