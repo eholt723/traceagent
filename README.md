@@ -16,8 +16,6 @@ The key distinction from a standard chatbot or RAG pipeline is that every decisi
 
 **[Live demo](https://eholt723-traceagent.hf.space)** — Hugging Face Spaces (Docker)
 
-**[AWS demo](http://32.192.175.42:8000)** — EC2 + RDS + CloudWatch (plain HTTP, no domain yet)
-
 ---
 
 ## Features
@@ -331,7 +329,7 @@ Alembic diffs the SQLAlchemy ORM models (`app/models/`) against the live schema 
 
 ## Deployment
 
-Every push to `main` triggers the CI/CD pipeline. If all checks pass, the workflow automatically deploys to both Hugging Face Spaces ([https://eholt723-traceagent.hf.space](https://eholt723-traceagent.hf.space)) and the AWS EC2 instance ([http://32.192.175.42:8000](http://32.192.175.42:8000)).
+Every push to `main` triggers the CI/CD pipeline. If all checks pass, the workflow automatically deploys to Hugging Face Spaces ([https://eholt723-traceagent.hf.space](https://eholt723-traceagent.hf.space)).
 
 The `Dockerfile` uses a two-stage build: the first stage builds the React app with Vite (`VITE_API_URL=""` so all requests go to the same origin), the second stage runs the FastAPI backend and serves the built frontend as static files.
 
