@@ -3,6 +3,7 @@ from sqlalchemy import inspect
 from unittest.mock import patch
 
 from app.agent import planner, reflector, synthesizer
+from app.agent.llm import chat_json
 
 
 def test_tables_exist(engine):
@@ -108,3 +109,27 @@ def test_fix_bracket_citations_noop_when_no_brackets_present():
     report = "A clean report with a real [markdown link](https://example.com) and no brackets."
     fixed = synthesizer._fix_bracket_citations(report, [{"title": "x", "url": "https://example.com"}])
     assert fixed == report
+
+
+def test_chat_json_returns_empty_dict_on_malformed_output():
+    with patch("app.agent.llm.chat", return_value="Sorry, I cannot produce JSON for that."):
+        result = chat_json([{"role": "user", "content": "x"}])
+    assert result == {}
+
+
+def test_chat_json_strips_markdown_fences():
+    with patch("app.agent.llm.chat", return_value='```json\n{"adequate": true}\n```'):
+        result = chat_json([{"role": "user", "content": "x"}])
+    assert result == {"adequate": True}
+
+
+def test_planner_falls_back_when_chat_json_returns_empty_dict():
+    with patch("app.agent.planner.chat_json", return_value={}):
+        result = planner.run("what is quantum computing?")
+    assert result == {"sub_questions": ["what is quantum computing?"]}
+
+
+def test_reflector_falls_back_when_chat_json_returns_empty_dict():
+    with patch("app.agent.reflector.chat_json", return_value={}):
+        result = reflector.run("test query", [])
+    assert result["adequate"] is True

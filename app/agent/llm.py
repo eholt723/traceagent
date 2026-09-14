@@ -1,4 +1,5 @@
 import json
+import re
 
 from groq import Groq
 
@@ -21,5 +22,13 @@ def chat(messages: list[dict], json_mode: bool = False, reasoning_effort: str = 
 
 
 def chat_json(messages: list[dict]) -> dict:
+    """Callers (planner, reflector) already fall back gracefully when the returned
+    dict is missing expected keys, so on malformed output we return {} rather than
+    raising and killing the whole pipeline run. gpt-oss occasionally wraps JSON mode
+    output in markdown fences or leaks stray text despite include_reasoning=False."""
     raw = chat(messages, json_mode=True)
-    return json.loads(raw)
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip())
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        return {}
