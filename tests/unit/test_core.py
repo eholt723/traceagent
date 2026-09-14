@@ -111,6 +111,41 @@ def test_fix_bracket_citations_noop_when_no_brackets_present():
     assert fixed == report
 
 
+def test_dedupe_by_url_removes_repeats_across_search_rounds():
+    results = [
+        {"title": "A", "url": "https://a.com"},
+        {"title": "A dup", "url": "https://a.com"},
+        {"title": "B", "url": "https://b.com"},
+        {"title": "No url"},
+    ]
+    deduped = synthesizer._dedupe_by_url(results)
+    assert [r["url"] for r in deduped] == ["https://a.com", "https://b.com"]
+
+
+def test_format_sources_numbers_sequentially():
+    results = [{"title": "First", "url": "https://a.com", "content": "x"},
+               {"title": "Second", "url": "https://b.com", "content": "y"}]
+    formatted, numbered = synthesizer._format_sources(results)
+    assert "[1] Title: First" in formatted
+    assert "[2] Title: Second" in formatted
+    assert numbered == results
+
+
+def test_resolve_numbered_citations_converts_known_index():
+    numbered = [{"title": "First Source", "url": "https://a.com"},
+                {"title": "Second Source", "url": "https://b.com"}]
+    report = "A claim [1] and another claim [2]."
+    resolved = synthesizer._resolve_numbered_citations(report, numbered)
+    assert resolved == "A claim [First Source](https://a.com) and another claim [Second Source](https://b.com)."
+
+
+def test_resolve_numbered_citations_leaves_out_of_range_index_untouched():
+    numbered = [{"title": "Only Source", "url": "https://a.com"}]
+    report = "A claim [1] and a bogus one [99]."
+    resolved = synthesizer._resolve_numbered_citations(report, numbered)
+    assert resolved == "A claim [Only Source](https://a.com) and a bogus one [99]."
+
+
 def test_chat_json_returns_empty_dict_on_malformed_output():
     with patch("app.agent.llm.chat", return_value="Sorry, I cannot produce JSON for that."):
         result = chat_json([{"role": "user", "content": "x"}])
