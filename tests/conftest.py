@@ -7,6 +7,8 @@ from unittest.mock import AsyncMock, patch
 
 from app.main import app
 from app.database import Base, get_db
+from app.config import settings
+from app.rate_limit import _hits as _rate_limit_hits
 
 _TEST_URL = "sqlite:///:memory:"
 
@@ -38,10 +40,18 @@ def client(db):
 
     app.dependency_overrides[get_db] = override_get_db
 
+    # Rate limiting is disabled by default in tests; individual tests opt in
+    # via monkeypatch to exercise it.
+    _rate_limit_hits.clear()
+    original_limit = settings.run_rate_limit
+    settings.run_rate_limit = 0
+
     # Prevent lifespan from connecting to the production database
     with patch.object(Base.metadata, "create_all"):
         with patch("app.api.runs.run_pipeline", new_callable=AsyncMock):
             with TestClient(app) as c:
                 yield c
 
+    settings.run_rate_limit = original_limit
+    _rate_limit_hits.clear()
     app.dependency_overrides.clear()

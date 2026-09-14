@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     max_search_loops: int = 3
     search_results_per_query: int = 5
 
+    # Per-IP rate limit on run-creating endpoints (POST /runs, /runs/{id}/fork).
+    # Set run_rate_limit to 0 to disable.
+    run_rate_limit: int = 3
+    run_rate_limit_window_seconds: int = 600
+
     # AWS / CloudWatch — optional, only active when credentials are set
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
