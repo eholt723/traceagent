@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     run_rate_limit: int = 3
     run_rate_limit_window_seconds: int = 600
 
+    # Reject run-creating requests whose Origin/Referer host isn't the known
+    # frontend. Extra hosts (e.g. a custom domain) can be added as a
+    # comma-separated list.
+    same_origin_check_enabled: bool = True
+    allowed_frontend_hosts: str = "eholt723-traceagent.hf.space"
+
     # AWS / CloudWatch — optional, only active when credentials are set
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""

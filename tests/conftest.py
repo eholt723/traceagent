@@ -40,11 +40,13 @@ def client(db):
 
     app.dependency_overrides[get_db] = override_get_db
 
-    # Rate limiting is disabled by default in tests; individual tests opt in
-    # via monkeypatch to exercise it.
+    # Rate limiting and the origin guard are disabled by default in tests;
+    # individual tests opt in via monkeypatch to exercise them.
     _rate_limit_hits.clear()
     original_limit = settings.run_rate_limit
+    original_origin_check = settings.same_origin_check_enabled
     settings.run_rate_limit = 0
+    settings.same_origin_check_enabled = False
 
     # Prevent lifespan from connecting to the production database
     with patch.object(Base.metadata, "create_all"):
@@ -53,5 +55,6 @@ def client(db):
                 yield c
 
     settings.run_rate_limit = original_limit
+    settings.same_origin_check_enabled = original_origin_check
     _rate_limit_hits.clear()
     app.dependency_overrides.clear()
